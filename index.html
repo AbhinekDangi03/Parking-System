@@ -1,9 +1,165 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Parking System</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Car Parking System</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f4f4;
+      color: #333;
+    }
+    header {
+      background: #2c3e50;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+      font-size: 1.8rem;
+      letter-spacing: 1px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 1rem;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      max-width: 500px;
+      margin-bottom: 2rem;
+    }
+    input, select, button {
+      padding: 0.75rem;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    button {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .parking-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 1rem;
+    }
+    .slot {
+      border-radius: 10px;
+      padding: 2rem;
+      background: #ecf0f1;
+      text-align: center;
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .slot.occupied {
+      background: #e74c3c;
+      color: white;
+      cursor: not-allowed;
+    }
+    .slot.available {
+      background: #2ecc71;
+      color: white;
+    }
+    .info {
+      margin-top: 2rem;
+      font-size: 1rem;
+    }
+    footer {
+      background: #2c3e50;
+      color: white;
+      text-align: center;
+      padding: 1rem;
+      position: fixed;
+      width: 100%;
+      bottom: 0;
+    }
+  </style>
 </head>
 <body>
-  <h1>Parking System Works!</h1>
+  <header>
+    Smart Car Parking System
+  </header>
+  <div class="container">
+    <form id="bookingForm">
+      <input type="text" id="name" placeholder="Name" required />
+      <input type="text" id="carNumber" placeholder="Car Number" required />
+      <select id="vehicleType">
+        <option value="Car">Car</option>
+        <option value="Bike">Bike</option>
+        <option value="SUV">SUV</option>
+      </select>
+      <button type="submit">Book Slot</button>
+    </form>
+
+    <h2>Parking Slots</h2>
+    <div class="parking-grid" id="parkingLot"></div>
+    <div class="info" id="slotInfo">Fill the form and click to book an available slot.</div>
+  </div>
+  <footer>
+    &copy; 2025 Abhinek's Parking Management
+  </footer>
+
+  <script>
+    const totalSlots = 20;
+    const parkingLot = document.getElementById('parkingLot');
+    const slotInfo = document.getElementById('slotInfo');
+    const bookingForm = document.getElementById('bookingForm');
+    let userData = {};
+
+    const slots = Array.from({ length: totalSlots }, (_, i) => ({
+      id: i + 1,
+      status: 'available',
+      reservedBy: null
+    }));
+
+    function renderSlots() {
+      parkingLot.innerHTML = '';
+      slots.forEach(slot => {
+        const div = document.createElement('div');
+        div.classList.add('slot', slot.status);
+        div.innerText = `Slot ${slot.id}`;
+        div.onclick = () => handleSlotClick(slot);
+        parkingLot.appendChild(div);
+      });
+    }
+
+    function handleSlotClick(slot) {
+      if (!userData.name || !userData.carNumber) {
+        slotInfo.innerText = 'Please fill out the form before booking a slot.';
+        return;
+      }
+
+      if (slot.status === 'occupied') {
+        slotInfo.innerText = `Slot ${slot.id} is already occupied.`;
+        return;
+      }
+
+      const time = new Date().toLocaleTimeString();
+      slot.status = 'occupied';
+      slot.reservedBy = { ...userData, time };
+
+      slotInfo.innerText = `Booked Slot ${slot.id} for ${userData.name} (${userData.vehicleType}) at ${time}`;
+      renderSlots();
+      bookingForm.reset();
+      userData = {};
+    }
+
+    bookingForm.onsubmit = function(e) {
+      e.preventDefault();
+      userData.name = document.getElementById('name').value;
+      userData.carNumber = document.getElementById('carNumber').value;
+      userData.vehicleType = document.getElementById('vehicleType').value;
+      slotInfo.innerText = 'Now click an available slot to book.';
+    };
+
+    renderSlots();
+  </script>
 </body>
 </html>
